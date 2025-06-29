@@ -16,33 +16,31 @@ struct KeyboardMainView: View {
     @State private var status: GenerationStatus = .notStarted(emptyText: true)
 
     var body: some View {
-        VStack(alignment: .center, spacing: 8.0) {
-            Button {
-                let originalText = (textInputProxy.documentContextBeforeInput ?? "") + (textInputProxy.documentContextAfterInput ?? "")
-                guard !originalText.isEmpty else {
-                    return
-                }
-                self.originalText = originalText
-                status = .inProgress(partial: "")
-                Task {
-                    do {
-                        for try await chunk in WenyanGenerator.shared.generate(text: originalText) {
-                            convertedText = chunk
-                            status = .inProgress(partial: chunk)
-                        }
-                        status = .finished(result: .success(convertedText))
-                    } catch {
-                        status = .finished(result: .failure(error))
+        VStack(alignment: .leading, spacing: 16.0) {
+            HStack {
+                Button {
+                    let originalText = (textInputProxy.documentContextBeforeInput ?? "") + (textInputProxy.documentContextAfterInput ?? "")
+                    guard !originalText.isEmpty else {
+                        return
                     }
+                    self.originalText = originalText
+                    status = .inProgress(partial: "")
+                    Task {
+                        do {
+                            for try await chunk in WenyanGenerator.shared.generate(text: originalText) {
+                                convertedText = chunk
+                                status = .inProgress(partial: chunk)
+                            }
+                            status = .finished(result: .success(convertedText))
+                        } catch {
+                            status = .finished(result: .failure(error))
+                        }
+                    }
+                } label: {
+                    Text("转换")
                 }
-            } label: {
-                Text("转换")
-            }
-            .buttonStyle(.glass)
-            if !convertedText.isEmpty {
-                Text(convertedText)
-            }
-            if !convertedText.isEmpty {
+                .buttonStyle(.glass)
+                Spacer()
                 Button {
                     replaceText(replacement: convertedText)
                     originalText = ""
@@ -51,14 +49,21 @@ struct KeyboardMainView: View {
                     Text("替换")
                 }
                 .buttonStyle(.glass)
+                .disabled(!status.isFinishedSuccessfully)
             }
+            .frame(maxWidth: .infinity, idealHeight: 44.0)
+            if !convertedText.isEmpty {
+                Text(convertedText)
+            }
+            Spacer()
         }
         .onAppear {
             status = .notStarted(emptyText: true)
             originalText = ""
             convertedText = ""
         }
-        .frame(maxWidth: .infinity, idealHeight: 300.0)
+        .frame(maxWidth: .infinity, idealHeight: 216.0)
+        .padding()
         .background(.clear)
     }
 

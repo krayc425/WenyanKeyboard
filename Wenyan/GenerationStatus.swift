@@ -21,4 +21,17 @@ enum GenerationStatus {
         }
     }
 
+    var isFinishedSuccessfully: Bool {
+        if case .finished(let result) = self {
+            switch result {
+                case .success(let string):
+                    return !string.isEmpty
+                case .failure:
+                    return false
+            }
+        } else {
+            return false
+        }
+    }
+
 }

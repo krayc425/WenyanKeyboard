@@ -63,6 +63,9 @@ struct GenerateView: View {
                                             Text("无结果")
                                         } else {
                                             Text(output)
+                                            Button("复制") {
+                                                UIPasteboard.general.string = output
+                                            }
                                         }
                                     case .failure(let error):
                                         Text(error.localizedDescription)
